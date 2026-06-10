@@ -4,6 +4,7 @@ import path from "node:path";
 import { readFile, stat } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { getMediaMimeTypeForExtension } from "../js/core/media/mediaTypes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -22,12 +23,21 @@ const mimeTypes = {
   ".js": "application/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".m3u8": "application/vnd.apple.mpegurl",
+  ".avi": "video/x-msvideo",
+  ".m2ts": "video/mp2t",
+  ".m4v": "video/mp4",
+  ".mkv": "video/x-matroska",
+  ".mov": "video/quicktime",
   ".mp4": "video/mp4",
+  ".mpeg": "video/mpeg",
+  ".mpg": "video/mpeg",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".svg": "image/svg+xml",
+  ".ts": "video/mp2t",
   ".txt": "text/plain; charset=utf-8",
+  ".webm": "video/webm",
   ".webp": "image/webp",
   ".woff": "font/woff",
   ".woff2": "font/woff2",
@@ -35,7 +45,10 @@ const mimeTypes = {
 };
 
 function getContentType(filePath) {
-  return mimeTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream";
+  const extension = path.extname(filePath).toLowerCase();
+  return mimeTypes[extension]
+    || getMediaMimeTypeForExtension(extension)
+    || "application/octet-stream";
 }
 
 function getLanUrls() {

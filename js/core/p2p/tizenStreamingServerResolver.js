@@ -1,5 +1,6 @@
 import { Platform } from "../../platform/index.js";
 import { TizenEngineFsService } from "../../platform/tizen/tizenEngineFsService.js";
+import { guessMediaMimeTypeFromPath } from "../media/mediaTypes.js";
 
 const TIZEN_STREAMING_KIND = "tizen-streaming-server";
 const CREATE_TIMEOUT_MS = 60000;
@@ -180,25 +181,7 @@ function buildPlaybackUrl(baseUrl, infoHash, fileIdx, sources = []) {
 }
 
 function guessMimeFromPath(path = "") {
-  const lower = String(path || "").toLowerCase();
-  const match = lower.match(/\.(mp4|m4v|mov|webm|mkv|avi|wmv|ts|m2ts|mpg|mpeg)(?:$|[/?#&])/i);
-  if (!match) {
-    return null;
-  }
-  const map = {
-    mp4: "video/mp4",
-    m4v: "video/mp4",
-    mov: "video/quicktime",
-    webm: "video/webm",
-    mkv: "video/x-matroska",
-    avi: "video/x-msvideo",
-    wmv: "video/x-ms-wmv",
-    ts: "video/mp2t",
-    m2ts: "video/mp2t",
-    mpg: "video/mpeg",
-    mpeg: "video/mpeg"
-  };
-  return map[String(match[1] || "").toLowerCase()] || null;
+  return guessMediaMimeTypeFromPath(path);
 }
 
 function selectFileIdx(stream = {}, createJson = {}) {

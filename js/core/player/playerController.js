@@ -8,6 +8,13 @@ import { dashJsEngine } from "./engines/dashJsEngine.js";
 import { resolvePlatformAvplayEngine } from "./engines/platformAvplayEngine.js";
 import { WebOsLunaService } from "../../platform/webos/webosLunaService.js";
 import { loadStreamingLibs } from "../../runtime/loadStreamingLibs.js";
+import {
+  guessMediaMimeTypeFromPath,
+  hasKnownMediaExtension,
+  isDirectVideoMimeType,
+  normalizeDeclaredMediaType,
+  normalizeMimeType as normalizeMediaMimeType
+} from "../media/mediaTypes.js";
 
 const MIN_PROGRESS_SYNC_DURATION_MS = 60000;
 
@@ -78,32 +85,11 @@ export const PlayerController = {
   },
 
   normalizeMimeType(mimeType) {
-    return String(mimeType || "").toLowerCase().split(";")[0].trim();
+    return normalizeMediaMimeType(mimeType);
   },
 
   normalizePlaybackSourceType(sourceType) {
-    const raw = String(sourceType || "").trim();
-    if (!raw) {
-      return null;
-    }
-    if (raw.includes("/")) {
-      return raw;
-    }
-
-    const normalized = raw.toLowerCase();
-    const aliases = {
-      dash: "application/dash+xml",
-      hls: "application/vnd.apple.mpegurl",
-      m3u8: "application/vnd.apple.mpegurl",
-      m4v: "video/mp4",
-      mkv: "video/x-matroska",
-      mov: "video/quicktime",
-      mp4: "video/mp4",
-      mpd: "application/dash+xml",
-      ts: "video/mp2t",
-      webm: "video/webm"
-    };
-    return aliases[normalized] || null;
+    return normalizeDeclaredMediaType(sourceType);
   },
 
   resolveRuntimeSourceType(sourceType) {
@@ -118,8 +104,9 @@ export const PlayerController = {
     ) {
       return normalized;
     }
-    // webOS can reject Matroska in canPlayType() while still needing the explicit source type.
-    if (Platform.isWebOS() && normalized === "video/x-matroska") {
+    // webOS can reject some direct-file containers in canPlayType() while still
+    // needing the explicit source type for the platform media pipeline.
+    if (Platform.isWebOS() && isDirectVideoMimeType(normalized)) {
       return normalized;
     }
     return this.canPlayNatively(normalized) ? normalized : null;
@@ -140,6 +127,10 @@ export const PlayerController = {
         || search?.get?.("output")
         || ""
       ).toLowerCase();
+      const hintedMimeType = this.normalizePlaybackSourceType(formatHint);
+      if (hintedMimeType) {
+        return hintedMimeType;
+      }
       if (path.endsWith(".m3u8")) {
         return "application/vnd.apple.mpegurl";
       }
@@ -158,27 +149,9 @@ export const PlayerController = {
       if (path.includes("/playlist")) {
         return "application/vnd.apple.mpegurl";
       }
-      const extensionMatch = path.match(/\.(mp4|m4v|mov|webm|mkv|avi|wmv|ts|m2ts|mpg|mpeg|3gp|mp3|aac|flac)(?=($|[/?#&]))/i);
-      if (extensionMatch) {
-        const extension = String(extensionMatch[1] || "").toLowerCase();
-        const directMimeMap = {
-          "3gp": "video/3gpp",
-          aac: "audio/aac",
-          avi: "video/x-msvideo",
-          flac: "audio/flac",
-          m2ts: "video/mp2t",
-          m4v: "video/mp4",
-          mkv: "video/x-matroska",
-          mov: "video/quicktime",
-          mp3: "audio/mpeg",
-          mp4: "video/mp4",
-          mpeg: "video/mpeg",
-          mpg: "video/mpeg",
-          ts: "video/mp2t",
-          webm: "video/webm",
-          wmv: "video/x-ms-wmv"
-        };
-        return directMimeMap[extension] || null;
+      const guessedMimeType = guessMediaMimeTypeFromPath(path);
+      if (guessedMimeType) {
+        return guessedMimeType;
       }
       return null;
     };
@@ -337,7 +310,7 @@ export const PlayerController = {
       // Ignore decode failures.
     }
 
-    return probes.some((value) => /\.(mkv|mp4|m4v|mov|webm|avi|wmv|ts|m2ts|mpg|mpeg|3gp)(?=($|[/?#&]))/i.test(String(value || "")));
+    return probes.some((value) => hasKnownMediaExtension(value));
   },
 
   isUsingAvPlay() {
@@ -1670,7 +1643,7 @@ export const PlayerController = {
     }
 
     const candidates = [];
-    if (Platform.isWebOS() && normalizedSourceType === "video/x-matroska" && canUseAvPlay) {
+    if (Platform.isWebOS() && isDirectVideoMimeType(normalizedSourceType) && canUseAvPlay) {
       pushCandidate(candidates, avplayEngine);
     }
     if (isTizenRuntime && canUseAvPlay) {
@@ -1718,8 +1691,13 @@ export const PlayerController = {
       webmVp9: supports('video/webm; codecs="vp9,opus"'),
       webm: supports("video/webm"),
       mkvH264: supports('video/x-matroska; codecs="avc1.4d401f,mp4a.40.2"') || supports("video/x-matroska"),
+      mkv: supports("video/x-matroska"),
+      avi: supports("video/x-msvideo") || supports("video/avi"),
+      mov: supports("video/quicktime"),
       quicktime: supports("video/quicktime"),
       mpegTs: supports("video/mp2t"),
+      m2ts: supports("video/mp2t") || supports("video/vnd.dlna.mpeg-tts"),
+      mpeg: supports("video/mpeg"),
       audioAac: supports('audio/mp4; codecs="mp4a.40.2"'),
       audioMp3: supports("audio/mpeg"),
       audioFlac: supports("audio/flac"),

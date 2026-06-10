@@ -3,6 +3,7 @@ import {
   isWebOsCompanionServiceAvailable,
   requestWebOsCompanionService
 } from "../../platform/webos/webosCompanionService.js";
+import { guessMediaMimeTypeFromPath } from "../media/mediaTypes.js";
 
 const ENGINEFS_CREATE_TIMEOUT_MS = 60000;
 const ENGINEFS_KIND = "webos-enginefs";
@@ -528,28 +529,7 @@ function getFileNameFromCreateJson(createJson = {}, fileIdx) {
 
 function guessMimeFromPath(path) {
   try {
-    const lower = String(path || "").toLowerCase();
-    const m = lower.match(/\.(mp4|m4v|mov|webm|mkv|avi|wmv|ts|m2ts|mpg|mpeg|3gp|mp3|aac|flac)(?:$|[/?#&])/i);
-    if (!m) return null;
-    const ext = String(m[1] || "").toLowerCase();
-    const map = {
-      mp4: "video/mp4",
-      m4v: "video/mp4",
-      mov: "video/quicktime",
-      webm: "video/webm",
-      mkv: "video/x-matroska",
-      avi: "video/x-msvideo",
-      wmv: "video/x-ms-wmv",
-      ts: "video/mp2t",
-      m2ts: "video/mp2t",
-      mpg: "video/mpeg",
-      mpeg: "video/mpeg",
-      "3gp": "video/3gpp",
-      mp3: "audio/mpeg",
-      aac: "audio/aac",
-      flac: "audio/flac"
-    };
-    return map[ext] || null;
+    return guessMediaMimeTypeFromPath(path);
   } catch (_) {
     return null;
   }
