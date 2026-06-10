@@ -3093,8 +3093,11 @@ export const PlayerScreen = {
       if (codecs.includes("dvh1") || codecs.includes("dvhe")) {
         score += supports("dolbyVision", true) ? 18 : -100;
       }
+      if (codecs.includes("avc1")) {
+        score += supports("h264Native", supports("mp4H264", true)) ? 8 : -70;
+      }
       if (codecs.includes("hvc1") || codecs.includes("hev1")) {
-        score += (supports("mp4Hevc", true) || supports("mp4HevcMain10", true)) ? 14 : -90;
+        score += supports("hevcNative", supports("mp4Hevc", true) || supports("mp4HevcMain10", true)) ? 14 : -90;
       }
       if (codecs.includes("av01")) {
         score += supports("mp4Av1", true) ? 10 : -80;
@@ -10958,8 +10961,11 @@ export const PlayerScreen = {
         if (text.includes("cam")) score -= 70;
         if (text.includes("ts")) score -= 40;
 
-        if (text.includes("hevc") || text.includes("h265") || text.includes("x265")) {
-          score += supports("mp4Hevc", true) || supports("mp4HevcMain10", true) ? 12 : -90;
+        if (/\b(avc|h\.?264|x264)\b/i.test(text)) {
+          score += supports("h264Native", supports("mp4H264", true)) ? 10 : -70;
+        }
+        if (/\b(hevc|h\.?265|x265)\b/i.test(text)) {
+          score += supports("hevcNative", supports("mp4Hevc", true) || supports("mp4HevcMain10", true)) ? 12 : -90;
         }
         if (text.includes("av1")) {
           score += supports("mp4Av1", true) ? 10 : -80;
