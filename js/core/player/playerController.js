@@ -1722,22 +1722,26 @@ export const PlayerController = {
       mp4: supports("video/mp4"),
       mp4H264: supportsCodecContainer("avc", "video/mp4", avcMp4Probes),
       mp4Hevc: supportsCodecContainer("hevc", "video/mp4", hevcMp4Probes),
-      mp4HevcMain10: supportsCodecContainer("hevc", "video/mp4", hevcMain10Mp4Probes),
+      mp4HevcMain10: supportsCodecContainer("hevc-main10", "video/mp4", hevcMain10Mp4Probes),
       mp4Av1: supports('video/mp4; codecs="av01.0.08M.08,mp4a.40.2"'),
       webmVp9: supports('video/webm; codecs="vp9,opus"'),
       webm: supports("video/webm"),
       mkvH264: supportsCodecContainer("avc", "video/x-matroska", ['video/x-matroska; codecs="avc1.4d401f,mp4a.40.2"']),
       mkvHevc: supportsCodecContainer("hevc", "video/x-matroska", ['video/x-matroska; codecs="hvc1.1.6.L93.B0,mp4a.40.2"', 'video/x-matroska; codecs="hev1.1.6.L93.B0,mp4a.40.2"']),
+      mkvHevcMain10: supportsCodecContainer("hevc-main10", "video/x-matroska", ['video/x-matroska; codecs="hvc1.2.4.L153.B0,mp4a.40.2"', 'video/x-matroska; codecs="hev1.2.4.L153.B0,mp4a.40.2"']),
+      mkvVp9: supportsCodecContainer("vp9", "video/x-matroska", ['video/x-matroska; codecs="vp9,opus"']),
       mkv: supports("video/x-matroska"),
       avi: supports("video/x-msvideo") || supports("video/avi"),
       aviH264: supportsCodecContainer("avc", "video/x-msvideo", ['video/x-msvideo; codecs="avc1.4d401f,mp4a.40.2"', 'video/avi; codecs="avc1.4d401f,mp4a.40.2"']),
       mov: supports("video/quicktime"),
       movH264: supportsCodecContainer("avc", "video/quicktime", ['video/quicktime; codecs="avc1.4d401f,mp4a.40.2"']),
       movHevc: supportsCodecContainer("hevc", "video/quicktime", ['video/quicktime; codecs="hvc1.1.6.L93.B0,mp4a.40.2"', 'video/quicktime; codecs="hev1.1.6.L93.B0,mp4a.40.2"']),
+      movHevcMain10: supportsCodecContainer("hevc-main10", "video/quicktime", ['video/quicktime; codecs="hvc1.2.4.L153.B0,mp4a.40.2"', 'video/quicktime; codecs="hev1.2.4.L153.B0,mp4a.40.2"']),
       quicktime: supports("video/quicktime"),
       mpegTs: supports("video/mp2t"),
       mpegTsH264: supportsCodecContainer("avc", "video/mp2t", ['video/mp2t; codecs="avc1.4d401f,mp4a.40.2"']),
       mpegTsHevc: supportsCodecContainer("hevc", "video/mp2t", ['video/mp2t; codecs="hvc1.1.6.L93.B0,mp4a.40.2"', 'video/mp2t; codecs="hev1.1.6.L93.B0,mp4a.40.2"']),
+      mpegTsHevcMain10: supportsCodecContainer("hevc-main10", "video/mp2t", ['video/mp2t; codecs="hvc1.2.4.L153.B0,mp4a.40.2"', 'video/mp2t; codecs="hev1.2.4.L153.B0,mp4a.40.2"']),
       m2ts: supports("video/mp2t") || supports("video/vnd.dlna.mpeg-tts"),
       mpeg: supports("video/mpeg"),
       audioAac: supports('audio/mp4; codecs="mp4a.40.2"'),
@@ -1759,7 +1763,13 @@ export const PlayerController = {
       || capabilities.mkvHevc
       || capabilities.movHevc
       || capabilities.mpegTsHevc;
-    capabilities.hdrLikely = capabilities.mp4HevcMain10 || capabilities.mp4Av1;
+    capabilities.hevcMain10Native = capabilities.mp4HevcMain10
+      || capabilities.mkvHevcMain10
+      || capabilities.movHevcMain10
+      || capabilities.mpegTsHevcMain10;
+    capabilities.vp9Native = capabilities.webmVp9 || capabilities.mkvVp9;
+    capabilities.hdr10Likely = capabilities.hevcMain10Native;
+    capabilities.hdrLikely = capabilities.hdr10Likely || capabilities.mp4Av1;
     capabilities.atmosLikely = capabilities.audioEac3;
     return capabilities;
   },

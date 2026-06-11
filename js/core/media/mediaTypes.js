@@ -41,7 +41,15 @@ export const VIDEO_CODEC_ALIASES = {
   hvc1: "hevc",
   h265: "hevc",
   "h.265": "hevc",
-  x265: "hevc"
+  x265: "hevc",
+  "hevc-main10": "hevc-main10",
+  hevcmain10: "hevc-main10",
+  hvc1main10: "hevc-main10",
+  hev1main10: "hevc-main10",
+  h265main10: "hevc-main10",
+  "h.265main10": "hevc-main10",
+  x265main10: "hevc-main10",
+  vp9: "vp9"
 };
 
 const WEBOS_NATIVE_VIDEO_CODEC_MIME_TYPES = {
@@ -56,16 +64,27 @@ const WEBOS_NATIVE_VIDEO_CODEC_MIME_TYPES = {
     "video/mp2t"
   ]),
   // LG webOS TV docs list HEVC for .mp4/.m4v/.mov, .mkv, and .ts/.trp/.tp/.mts.
+  // The same docs list HEVC Main/Main10 in the hardware transmission limits.
   hevc: new Set([
     "video/mp4",
     "video/quicktime",
     "video/x-matroska",
     "video/mp2t"
+  ]),
+  "hevc-main10": new Set([
+    "video/mp4",
+    "video/quicktime",
+    "video/x-matroska",
+    "video/mp2t"
+  ]),
+  // LG webOS TV docs list VP9 for .mkv. WebM VP9 remains runtime-probed with canPlayType().
+  vp9: new Set([
+    "video/x-matroska"
   ])
 };
 
 const MEDIA_EXTENSION_PATTERN = /\.(3g2|3gp|aac|avi|flac|m2ts|m4v|mkv|mov|mp3|mp4|mpeg|mpg|mts|tp|trp|ts|webm|wmv)(?=($|[/?#&]))/i;
-const VIDEO_CODEC_PATTERN = /\b(avc1|avc|h\.?264|x264|hev1|hvc1|hevc|h\.?265|x265)\b/i;
+const VIDEO_CODEC_PATTERN = /\b(avc1|avc|h\.?264|x264|hev1|hvc1|hevc|h\.?265|x265|vp9)\b/i;
 
 export function normalizeMimeType(mimeType) {
   return String(mimeType || "").toLowerCase().split(";")[0].trim();

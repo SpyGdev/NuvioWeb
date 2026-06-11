@@ -3103,7 +3103,7 @@ export const PlayerScreen = {
         score += supports("mp4Av1", true) ? 10 : -80;
       }
       if (codecs.includes("vp9")) {
-        score += supports("webmVp9", true) ? 8 : -60;
+        score += supports("vp9Native", supports("webmVp9", true)) ? 8 : -60;
       }
       if (codecs.includes("ec-3") || codecs.includes("eac3")) {
         score += supports("audioEac3", true) ? 10 : -50;
@@ -10971,7 +10971,7 @@ export const PlayerScreen = {
           score += supports("mp4Av1", true) ? 10 : -80;
         }
         if (text.includes("vp9")) {
-          score += supports("webmVp9", true) ? 8 : -50;
+          score += supports("vp9Native", supports("webmVp9", true)) ? 8 : -50;
         }
         if (text.includes(".mkv") || text.includes("matroska")) {
           score += supports("mkvH264", true) ? 8 : -120;
@@ -10981,7 +10981,9 @@ export const PlayerScreen = {
           score += supports("webmVp9", true) ? 6 : -45;
         }
 
-        if (text.includes("hdr") || text.includes("hdr10") || text.includes("hlg")) {
+        if (text.includes("hdr10")) {
+          score += supports("hdr10Likely", supports("hdrLikely", true)) ? 16 : -35;
+        } else if (text.includes("hdr") || text.includes("hlg")) {
           score += supports("hdrLikely", true) ? 16 : -35;
         }
         if (text.includes("dolby vision") || text.includes(" dv ")) {
